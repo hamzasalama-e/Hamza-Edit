@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hamza Edit Software</title>
+<title>Hamza Editor</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
@@ -143,7 +143,7 @@ body{background:#0f1115;color:#e2e8f0;height:100vh;display:flex;flex-direction:c
 </div>
 
 <div class="top-bar">
-    <div class="logo"><i class="fas fa-film"></i> VN-Clone Pro</div>
+    <div class="logo"><i class="fas fa-film"></i> Hamza Editor</div>
     <div class="actions">
         <button class="btn btn-outline btn-sm" id="backToProjectsBtn" style="display:none;"><i class="fas fa-arrow-right"></i> المشاريع</button>
         <button class="btn btn-outline btn-sm" id="uploadBtn" style="display:none;"><i class="fas fa-upload"></i> رفع فيديو</button>
@@ -354,7 +354,7 @@ body{background:#0f1115;color:#e2e8f0;height:100vh;display:flex;flex-direction:c
 'use strict';
 
 // ====== IndexedDB ======
-const DB_NAME='vnclone-db', DB_VERSION=1, STORE='projects';
+const DB_NAME='hamza-editor-db', DB_VERSION=1, STORE='projects';
 let db=null;
 
 function openDB(){
@@ -1288,7 +1288,7 @@ async function init(){
     try{
         await openDB();
         await renderProjects();
-        console.log('%c VN-Clone Pro ','background:#2da8ff;color:white;padding:5px 10px;border-radius:4px;font-weight:bold;');
+        console.log('%c Hamza Editor ','background:#2da8ff;color:white;padding:5px 10px;border-radius:4px;font-weight:bold;');
     }catch(err){
         console.error(err);
         showToast('فشل تهيئة قاعدة البيانات: '+err.message,'error');
