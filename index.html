@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamza Edit Software</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
+body{background:#0f1115;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.top-bar{background:#15181d;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a2e35;flex-shrink:0;flex-wrap:wrap;gap:10px}
+.logo{font-weight:bold;color:#2da8ff;font-size:1.1rem;display:flex;align-items:center;gap:8px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{background:#2da8ff;color:#fff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.8rem;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap}
+.btn:hover{background:#1a8ae0}
+.btn:disabled{background:#3a3f47;cursor:not-allowed;opacity:.6}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+.btn-outline{background:transparent;border:1px solid #2da8ff;color:#2da8ff}
+.btn-outline:hover{background:rgba(45,168,255,.1)}
+.btn-success{background:#16a34a}.btn-success:hover{background:#15803d}
+.btn-danger{background:#dc2626}.btn-danger:hover{background:#b91c1c}
+.projects-screen{flex:1;overflow-y:auto;padding:30px 40px}
+.projects-screen.hidden{display:none}
+.projects-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px}
+.projects-header h2{font-size:1.4rem;color:#e2e8f0;display:flex;align-items:center;gap:10px}
+.projects-header h2 i{color:#2da8ff}
+.projects-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search-box{background:#1e2228;border:1px solid #2a2e35;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;min-width:220px}
+.search-box i{color:#64748b;font-size:.85rem}
+.search-box input{background:transparent;border:none;color:#fff;outline:none;flex:1;font-size:.85rem;font-family:inherit}
+.sort-select{background:#1e2228;border:1px solid #2a2e35;border-radius:8px;padding:8px 12px;color:#fff;font-size:.85rem;cursor:pointer;font-family:inherit}
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.project-card{background:#15181d;border-radius:14px;overflow:hidden;border:1px solid #2a2e35;transition:.25s;cursor:pointer;position:relative;display:flex;flex-direction:column}
+.project-card:hover{border-color:#2da8ff;transform:translateY(-4px);box-shadow:0 15px 30px -10px rgba(45,168,255,.25)}
+.project-thumb{aspect-ratio:16/9;background:#0a0c0f;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.project-thumb img{width:100%;height:100%;object-fit:cover}
+.project-thumb .no-thumb{color:#3a3f47;font-size:2.5rem}
+.project-thumb .duration-badge{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.75);color:#fff;font-size:.7rem;padding:3px 8px;border-radius:4px;font-weight:600}
+.project-thumb .status-badge{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:4px;font-size:.65rem;font-weight:600}
+.status-badge.empty{background:rgba(100,116,139,.9);color:#fff}
+.status-badge.edited{background:rgba(45,168,255,.9);color:#fff}
+.project-info{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:6px}
+.project-name{font-size:.95rem;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.project-meta{font-size:.72rem;color:#64748b;display:flex;justify-content:space-between;align-items:center}
+.project-menu-btn{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s;font-size:.85rem}
+.project-card:hover .project-menu-btn{opacity:1}
+.project-menu-btn:hover{background:rgba(45,168,255,.9)}
+.context-menu{position:fixed;background:#1e2228;border:1px solid #2a2e35;border-radius:8px;padding:6px;z-index:9999;min-width:160px;box-shadow:0 10px 30px rgba(0,0,0,.6);display:none}
+.context-menu.show{display:block}
+.context-menu button{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;color:#e2e8f0;padding:8px 12px;border-radius:5px;cursor:pointer;font-size:.82rem;font-family:inherit;text-align:right}
+.context-menu button:hover{background:#2a2e35}
+.context-menu button.danger{color:#f87171}
+.context-menu button.danger:hover{background:rgba(220,38,38,.15)}
+.context-menu button i{width:16px;text-align:center}
+.new-project-card{background:transparent;border:2px dashed #2a2e35;border-radius:14px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.2s;color:#64748b}
+.new-project-card:hover{border-color:#2da8ff;color:#2da8ff;background:rgba(45,168,255,.05)}
+.new-project-card i{font-size:2rem}
+.new-project-card span{font-size:.82rem;font-weight:600}
+.empty-projects{grid-column:1/-1;text-align:center;padding:60px 20px;color:#4a5568}
+.empty-projects i{font-size:4rem;margin-bottom:15px;display:block}
+.empty-projects h3{font-size:1.2rem;color:#94a3b8;margin-bottom:8px}
+.empty-projects p{font-size:.85rem}
+.editor-screen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0}
+.editor-screen.active{display:flex}
+.main-area{display:flex;flex:1;overflow:hidden;min-height:0}
+.preview-area{flex:3;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-width:0}
+#previewCanvas{max-width:100%;max-height:100%;object-fit:contain}
+.preview-placeholder{text-align:center;color:#4a5568;padding:20px}
+.preview-placeholder i{font-size:4rem;margin-bottom:1rem;display:block}
+.grid-overlay{position:absolute;inset:0;pointer-events:none;display:none}
+.grid-overlay.show{display:block}
+.grid-overlay::before,.grid-overlay::after{content:'';position:absolute;background:rgba(255,255,255,.25)}
+.grid-overlay::before{top:33.3%;left:0;right:0;height:1px;box-shadow:0 33.3vh 0 rgba(255,255,255,.25)}
+.grid-overlay::after{left:33.3%;top:0;bottom:0;width:1px;box-shadow:33.3vw 0 0 rgba(255,255,255,.25)}
+.playback-controls{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);background:rgba(15,17,21,.85);padding:8px 18px;border-radius:30px;display:flex;gap:12px;color:#fff;align-items:center;backdrop-filter:blur(8px);z-index:10}
+.playback-controls button{background:transparent;border:none;color:#fff;cursor:pointer;font-size:.95rem;padding:5px 8px;border-radius:50%;transition:.2s}
+.playback-controls button:hover{background:rgba(255,255,255,.15)}
+.playback-controls .time-display{font-size:.78rem;color:#94a3b8;min-width:90px;text-align:center}
+.tools-panel{width:300px;flex-shrink:0;background:#15181d;border-right:1px solid #2a2e35;overflow-y:auto}
+.tool-tabs{display:flex;background:#1a1e24;border-bottom:1px solid #2a2e35;position:sticky;top:0;z-index:5}
+.tool-tab{flex:1;padding:10px 5px;text-align:center;cursor:pointer;font-size:.7rem;color:#94a3b8;border-bottom:2px solid transparent;transition:.2s}
+.tool-tab:hover{background:#2a2e35;color:#fff}
+.tool-tab.active{color:#2da8ff;border-bottom-color:#2da8ff;background:#15181d}
+.tool-tab i{display:block;font-size:1.1rem;margin-bottom:3px}
+.tool-content{padding:12px;display:none}
+.tool-content.active{display:block}
+.control-group{margin-bottom:14px}
+.control-group>label{display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:#94a3b8;margin-bottom:5px}
+.control-group>label .val{color:#2da8ff;font-weight:600}
+.control-group input[type="range"]{width:100%;height:4px;-webkit-appearance:none;background:#2a2e35;border-radius:2px;outline:none}
+.control-group input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#2da8ff;border-radius:50%;cursor:pointer}
+.control-group input[type="text"],.control-group input[type="number"],.control-group select,.control-group textarea{width:100%;padding:7px 10px;background:#1e2228;border:1px solid #2a2e35;border-radius:6px;color:#fff;font-size:.82rem;font-family:inherit}
+.control-group textarea{resize:vertical;min-height:50px;line-height:1.4}
+.control-group input[type="color"]{width:100%;height:32px;padding:2px;background:#1e2228;border:1px solid #2a2e35;border-radius:6px;cursor:pointer}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap}
+.btn-row .btn{flex:1;justify-content:center;min-width:0}
+.quick-tools{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.qt-btn{background:#1e2228;border:1px solid #2a2e35;border-radius:6px;padding:10px 5px;cursor:pointer;color:#e2e8f0;font-size:.68rem;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.qt-btn:hover{background:#2a2e35;border-color:#3b82f6}
+.qt-btn i{font-size:1.1rem}
+.filter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.filter-btn{padding:8px 4px;border-radius:6px;background:#1e2228;border:1px solid #2a2e35;color:#e2e8f0;font-size:.7rem;cursor:pointer;transition:.2s;text-align:center}
+.filter-btn:hover{background:#2a2e35}
+.filter-btn.active{border-color:#2da8ff;background:#2a2e35;color:#2da8ff}
+.timeline-container{height:180px;background:#15181d;border-top:1px solid #2a2e35;display:flex;flex-direction:column;flex-shrink:0}
+.timeline-toolbar{padding:6px 12px;display:flex;gap:6px;border-bottom:1px solid #2a2e35;background:#1a1e24;align-items:center}
+.timeline-toolbar button{background:transparent;border:none;color:#94a3b8;cursor:pointer;padding:5px 8px;border-radius:4px;font-size:.82rem}
+.timeline-toolbar button:hover{background:#2a2e35;color:#fff}
+.timeline-toolbar .time-info{margin-right:auto;font-size:.75rem;color:#64748b}
+.timeline-tracks{flex:1;padding:10px 12px;overflow-x:auto}
+.track{height:32px;background:#1e2228;border-radius:4px;position:relative;display:flex;align-items:center;margin-bottom:6px;overflow:hidden}
+.track-label{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.62rem;color:#64748b;z-index:2;background:#1e2228;padding:2px 6px;border-radius:3px;pointer-events:none}
+.clip{height:100%;background:linear-gradient(90deg,#2da8ff33,#2da8ff11);border-right:2px solid #2da8ff;border-left:2px solid #2da8ff;display:flex;align-items:center;padding:0 10px;font-size:.68rem;color:#90cdf4;position:relative;margin-right:50px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#1e293b;color:#fff;padding:11px 20px;border-radius:30px;font-weight:500;box-shadow:0 20px 35px -10px rgba(0,0,0,.5);opacity:0;transition:all .3s ease;display:flex;align-items:center;gap:10px;z-index:9999;pointer-events:none;font-size:.85rem;border:1px solid rgba(255,255,255,.1)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast i{color:#4ade80;font-size:1.05rem}
+.toast.error i{color:#f87171}
+.toast.info i{color:#60a5fa}
+.loading-overlay{position:fixed;inset:0;background:rgba(15,17,21,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:18px;z-index:10000;backdrop-filter:blur(4px)}
+.loading-overlay.show{display:flex}
+.spinner{width:48px;height:48px;border:4px solid #2a2e35;border-top-color:#2da8ff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:#94a3b8;font-size:.88rem}
+.progress-bar{position:fixed;top:0;left:0;height:3px;background:#2da8ff;width:0%;z-index:10001;transition:width .2s}
+.autosave-indicator{position:fixed;top:60px;left:20px;background:rgba(22,163,74,.9);color:#fff;padding:6px 14px;border-radius:20px;font-size:.75rem;display:flex;align-items:center;gap:6px;opacity:0;transition:.3s;z-index:500;pointer-events:none;backdrop-filter:blur(4px)}
+.autosave-indicator.show{opacity:1}
+.autosave-indicator.saving{background:rgba(217,119,6,.9)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:9998;backdrop-filter:blur(4px)}
+.modal.show{display:flex}
+.modal-content{background:#15181d;border-radius:12px;padding:20px;max-width:450px;width:90%;border:1px solid #2a2e35}
+.modal-content h3{margin-bottom:15px;color:#2da8ff;font-size:1rem}
+.modal-content label{display:block;font-size:.78rem;color:#94a3b8;margin:12px 0 5px}
+.modal-content input{width:100%;padding:9px 12px;background:#1e2228;border:1px solid #2a2e35;border-radius:6px;color:#fff;font-size:.9rem;font-family:inherit}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+@media(max-width:900px){.main-area{flex-direction:column}.tools-panel{width:100%;max-height:240px;border-right:none;border-bottom:1px solid #2a2e35}.timeline-container{height:140px}.projects-screen{padding:20px}.projects-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="autosave-indicator" id="autosaveIndicator">
+    <i class="fas fa-check-circle"></i><span id="autosaveText">تم الحفظ</span>
+</div>
+
+<div class="top-bar">
+    <div class="logo"><i class="fas fa-film"></i> VN-Clone Pro</div>
+    <div class="actions">
+        <button class="btn btn-outline btn-sm" id="backToProjectsBtn" style="display:none;"><i class="fas fa-arrow-right"></i> المشاريع</button>
+        <button class="btn btn-outline btn-sm" id="uploadBtn" style="display:none;"><i class="fas fa-upload"></i> رفع فيديو</button>
+        <button class="btn btn-outline btn-sm" id="screenshotBtn" style="display:none;" disabled><i class="fas fa-camera"></i> لقطة</button>
+        <button class="btn btn-success btn-sm" id="exportBtn" style="display:none;" disabled><i class="fas fa-file-export"></i> تصدير</button>
+        <input type="file" id="videoInput" accept="video/*" hidden>
+        <input type="file" id="imageInput" accept="image/*" hidden>
+    </div>
+</div>
+
+<div class="projects-screen" id="projectsScreen">
+    <div class="projects-header">
+        <h2><i class="fas fa-folder-open"></i> مشاريعي</h2>
+        <div class="projects-controls">
+            <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن مشروع..."></div>
+            <select class="sort-select" id="sortSelect">
+                <option value="date-desc">الأحدث أولاً</option>
+                <option value="date-asc">الأقدم أولاً</option>
+                <option value="name-asc">الاسم (أ-ي)</option>
+                <option value="name-desc">الاسم (ي-أ)</option>
+            </select>
+            <button class="btn" id="newProjectTopBtn"><i class="fas fa-plus"></i> مشروع جديد</button>
+        </div>
+    </div>
+    <div class="projects-grid" id="projectsGrid"></div>
+</div>
+
+<div class="editor-screen" id="editorScreen">
+    <div class="main-area">
+        <div class="preview-area" id="previewArea">
+            <div class="preview-placeholder" id="placeholder">
+                <i class="fas fa-video"></i><p>ارفع فيديو لبدء التحرير</p>
+            </div>
+            <canvas id="previewCanvas" style="display:none;"></canvas>
+            <video id="videoEl" style="display:none;" playsinline crossorigin="anonymous"></video>
+            <div class="grid-overlay" id="gridOverlay"></div>
+            <div class="playback-controls" id="playbackControls" style="display:none;">
+                <button id="playPauseBtn"><i class="fas fa-play"></i></button>
+                <button id="stopBtn"><i class="fas fa-stop"></i></button>
+                <button id="skipBackBtn"><i class="fas fa-backward"></i></button>
+                <button id="skipFwdBtn"><i class="fas fa-forward"></i></button>
+                <span class="time-display" id="timeDisplay">0.0 / 0.0</span>
+            </div>
+        </div>
+
+        <div class="tools-panel">
+            <div class="tool-tabs">
+                <div class="tool-tab active" data-tab="media"><i class="fas fa-photo-film"></i>وسائط</div>
+                <div class="tool-tab" data-tab="text"><i class="fas fa-font"></i>نص</div>
+                <div class="tool-tab" data-tab="filters"><i class="fas fa-magic"></i>فلاتر</div>
+                <div class="tool-tab" data-tab="adjust"><i class="fas fa-sliders-h"></i>تعديل</div>
+            </div>
+
+            <div class="tool-content active" id="tab-media">
+                <div class="control-group">
+                    <label>أدوات سريعة</label>
+                    <div class="quick-tools">
+                        <div class="qt-btn" id="toolUpload"><i class="fas fa-plus-circle"></i>رفع</div>
+                        <div class="qt-btn" id="toolTrim"><i class="fas fa-cut"></i>قص</div>
+                        <div class="qt-btn" id="toolCrop"><i class="fas fa-crop"></i>اقتصاص</div>
+                        <div class="qt-btn" id="toolRotate"><i class="fas fa-rotate-right"></i>تدوير</div>
+                        <div class="qt-btn" id="toolFlip"><i class="fas fa-arrows-left-right"></i>قلب</div>
+                        <div class="qt-btn" id="toolGrid"><i class="fas fa-border-all"></i>شبكة</div>
+                        <div class="qt-btn" id="toolImage"><i class="fas fa-image"></i>صورة</div>
+                        <div class="qt-btn" id="toolSpeed"><i class="fas fa-tachometer-alt"></i>سرعة</div>
+                        <div class="qt-btn" id="toolReset"><i class="fas fa-undo"></i>إعادة</div>
+                    </div>
+                </div>
+                <div class="control-group" id="trimSettings" style="display:none;">
+                    <label>بداية القص <span class="val" id="trimStartVal">0.0</span> ث</label>
+                    <input type="range" id="trimStart" min="0" max="100" value="0" step="0.1">
+                    <label style="margin-top:8px;">نهاية القص <span class="val" id="trimEndVal">0.0</span> ث</label>
+                    <input type="range" id="trimEnd" min="0" max="100" value="100" step="0.1">
+                </div>
+                <div class="control-group" id="cropSettings" style="display:none;">
+                    <label>اقتاص من الأعلى <span class="val" id="cropTopVal">0</span>%</label>
+                    <input type="range" id="cropTop" min="0" max="45" value="0">
+                    <label style="margin-top:6px;">اقتاص من الأسفل <span class="val" id="cropBottomVal">0</span>%</label>
+                    <input type="range" id="cropBottom" min="0" max="45" value="0">
+                    <label style="margin-top:6px;">اقتاص من اليمين <span class="val" id="cropRightVal">0</span>%</label>
+                    <input type="range" id="cropRight" min="0" max="45" value="0">
+                    <label style="margin-top:6px;">اقتاص من اليسار <span class="val" id="cropLeftVal">0</span>%</label>
+                    <input type="range" id="cropLeft" min="0" max="45" value="0">
+                </div>
+                <div class="control-group" id="speedSettings" style="display:none;">
+                    <label>سرعة التشغيل <span class="val" id="speedVal">1.0</span>x</label>
+                    <input type="range" id="speedControl" min="0.25" max="3" value="1" step="0.05">
+                </div>
+                <div class="control-group">
+                    <label>مستوى الصوت <span class="val" id="volumeVal">100</span>%</label>
+                    <input type="range" id="volumeControl" min="0" max="100" value="100">
+                </div>
+                <div class="control-group" id="imageSettings" style="display:none;">
+                    <label>حجم الصورة <span class="val" id="imgSizeVal">20</span>%</label>
+                    <input type="range" id="imgSize" min="5" max="80" value="20">
+                    <label style="margin-top:6px;">الموضع (X) <span class="val" id="imgXVal">80</span>%</label>
+                    <input type="range" id="imgX" min="0" max="100" value="80">
+                    <label style="margin-top:6px;">الموضع (Y) <span class="val" id="imgYVal">15</span>%</label>
+                    <input type="range" id="imgY" min="0" max="100" value="15">
+                    <div class="btn-row" style="margin-top:8px;"><button class="btn btn-sm btn-outline" id="removeImageBtn">إزالة الصورة</button></div>
+                </div>
+            </div>
+
+            <div class="tool-content" id="tab-text">
+                <div class="control-group"><label>النص</label><textarea id="textContent" rows="3" placeholder="اكتب النص هنا...">نص تجريبي</textarea></div>
+                <div class="control-group"><label>أنماط جاهزة</label>
+                    <div class="btn-row">
+                        <button class="btn btn-sm btn-outline" data-preset="title">عنوان</button>
+                        <button class="btn btn-sm btn-outline" data-preset="subtitle">ترجمة</button>
+                        <button class="btn btn-sm btn-outline" data-preset="signature">توقيع</button>
+                    </div>
+                </div>
+                <div class="control-group"><label>الحجم <span class="val" id="textSizeVal">40</span>px</label><input type="range" id="textSize" min="12" max="150" value="40"></div>
+                <div class="control-group"><label>اللون</label><input type="color" id="textColor" value="#ffffff"></div>
+                <div class="control-group">
+                    <label>الموضع (X) <span class="val" id="textXVal">50</span>%</label><input type="range" id="textX" min="0" max="100" value="50">
+                    <label style="margin-top:6px;">الموضع (Y) <span class="val" id="textYVal">80</span>%</label><input type="range" id="textY" min="0" max="100" value="80">
+                </div>
+                <div class="control-group">
+                    <label>الخلفية</label><input type="color" id="textBgColor" value="#000000">
+                    <label style="margin-top:6px;">شفافية <span class="val" id="textBgAlphaVal">0</span>%</label><input type="range" id="textBgAlpha" min="0" max="100" value="0">
+                </div>
+                <div class="control-group"><label>خيارات</label>
+                    <div class="btn-row">
+                        <button class="btn btn-sm btn-outline" id="textBoldBtn"><i class="fas fa-bold"></i></button>
+                        <button class="btn btn-sm btn-outline" id="textItalicBtn"><i class="fas fa-italic"></i></button>
+                        <button class="btn btn-sm btn-outline" id="textShadowBtn">ظل</button>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-sm btn-success" id="addTextBtn"><i class="fas fa-plus"></i> إضافة</button>
+                    <button class="btn btn-sm btn-outline" id="clearTextBtn">مسح</button>
+                </div>
+            </div>
+
+            <div class="tool-content" id="tab-filters">
+                <div class="control-group"><label>فلتر الفيديو</label>
+                    <div class="filter-grid">
+                        <div class="filter-btn active" data-filter="none">بدون</div>
+                        <div class="filter-btn" data-filter="grayscale">أبيض وأسود</div>
+                        <div class="filter-btn" data-filter="sepia">قديم</div>
+                        <div class="filter-btn" data-filter="warm">دافئ</div>
+                        <div class="filter-btn" data-filter="cool">بارد</div>
+                        <div class="filter-btn" data-filter="vivid">زاهي</div>
+                        <div class="filter-btn" data-filter="cinematic">سينمائي</div>
+                        <div class="filter-btn" data-filter="vintage">فينتاج</div>
+                        <div class="filter-btn" data-filter="blur">ضبابي</div>
+                    </div>
+                </div>
+                <div class="control-group"><label>شدة الفلتر <span class="val" id="filterIntensityVal">100</span>%</label><input type="range" id="filterIntensity" min="0" max="100" value="100"></div>
+            </div>
+
+            <div class="tool-content" id="tab-adjust">
+                <div class="control-group"><label>السطوع <span class="val" id="brightnessVal">100</span>%</label><input type="range" id="brightness" min="0" max="200" value="100"></div>
+                <div class="control-group"><label>التباين <span class="val" id="contrastVal">100</span>%</label><input type="range" id="contrast" min="0" max="200" value="100"></div>
+                <div class="control-group"><label>التشبع <span class="val" id="saturationVal">100</span>%</label><input type="range" id="saturation" min="0" max="300" value="100"></div>
+                <div class="control-group"><label>تدرّج اللون <span class="val" id="hueVal">0</span>°</label><input type="range" id="hue" min="-180" max="180" value="0"></div>
+                <div class="control-group"><label>التمويه <span class="val" id="blurVal">0</span>px</label><input type="range" id="blur" min="0" max="20" value="0" step="0.5"></div>
+                <div class="btn-row"><button class="btn btn-sm btn-outline" id="resetAdjustBtn">إعادة ضبط</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="timeline-container">
+        <div class="timeline-toolbar">
+            <button id="zoomInBtn"><i class="fas fa-search-plus"></i></button>
+            <button id="zoomOutBtn"><i class="fas fa-search-minus"></i></button>
+            <span class="time-info" id="timelineInfo">لم يتم رفع فيديو</span>
+        </div>
+        <div class="timeline-tracks" id="timelineTracks">
+            <div class="track"><span class="track-label">فيديو</span><div class="clip" id="videoClip" style="display:none;">فيديو</div></div>
+            <div class="track"><span class="track-label">نص</span><div class="clip" id="textClip" style="display:none;background:#48bb7833;border-color:#48bb78;color:#9ae6b4;">نص</div></div>
+            <div class="track"><span class="track-label">صورة</span><div class="clip" id="imageClip" style="display:none;background:#f6ad5533;border-color:#f6ad55;color:#fbd38d;">صورة</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="context-menu" id="contextMenu">
+    <button data-action="open"><i class="fas fa-folder-open"></i> فتح</button>
+    <button data-action="rename"><i class="fas fa-edit"></i> إعادة تسمية</button>
+    <button data-action="duplicate"><i class="fas fa-copy"></i> تكرار</button>
+    <button data-action="delete" class="danger"><i class="fas fa-trash"></i> حذف</button>
+</div>
+
+<div class="modal" id="renameModal"><div class="modal-content">
+    <h3><i class="fas fa-edit"></i> إعادة تسمية</h3>
+    <label>الاسم الجديد</label><input type="text" id="renameInput">
+    <div class="modal-actions"><button class="btn btn-outline" id="renameCancelBtn">إلغاء</button><button class="btn btn-success" id="renameSaveBtn">حفظ</button></div>
+</div></div>
+
+<div class="modal" id="newProjectModal"><div class="modal-content">
+    <h3><i class="fas fa-plus-circle"></i> مشروع جديد</h3>
+    <label>اسم المشروع</label><input type="text" id="newProjectName" placeholder="مثال: فيديو تعريفي">
+    <div class="modal-actions"><button class="btn btn-outline" id="newProjectCancelBtn">إلغاء</button><button class="btn btn-success" id="newProjectCreateBtn">إنشاء</button></div>
+</div></div>
+
+<div class="modal" id="deleteModal"><div class="modal-content">
+    <h3><i class="fas fa-exclamation-triangle" style="color:#f87171;"></i> تأكيد الحذف</h3>
+    <p style="font-size:.88rem;color:#94a3b8;margin:10px 0;line-height:1.6;">هل أنت متأكد من حذف هذا المشروع؟</p>
+    <div class="modal-actions"><button class="btn btn-outline" id="deleteCancelBtn">إلغاء</button><button class="btn btn-danger" id="deleteConfirmBtn">حذف</button></div>
+</div></div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">تم</span></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text" id="loadingText">جارٍ المعالجة...</div></div>
+
+<script>
+(function(){
+'use strict';
+
+// ====== IndexedDB ======
+const DB_NAME='vnclone-db', DB_VERSION=1, STORE='projects';
+let db=null;
+
+function openDB(){
+    return new Promise((resolve,reject)=>{
+        const req=indexedDB.open(DB_NAME,DB_VERSION);
+        req.onupgradeneeded=(e)=>{
+            const d=e.target.result;
+            if(!d.objectStoreNames.contains(STORE)){
+                d.createObjectStore(STORE,{keyPath:'id'});
+            }
+        };
+        req.onsuccess=(e)=>{db=e.target.result;resolve(db)};
+        req.onerror=(e)=>reject(e);
+    });
+}
+
+function dbPut(project){
+    return new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readwrite');
+        const req=tx.objectStore(STORE).put(project);
+        req.onsuccess=()=>resolve();
+        req.onerror=(e)=>reject(e);
+    });
+}
+
+function dbGetAll(){
+    return new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readonly');
+        const req=tx.objectStore(STORE).getAll();
+        req.onsuccess=()=>resolve(req.result||[]);
+        req.onerror=(e)=>reject(e);
+    });
+}
+
+function dbGet(id){
+    return new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readonly');
+        const req=tx.objectStore(STORE).get(id);
+        req.onsuccess=()=>resolve(req.result);
+        req.onerror=(e)=>reject(e);
+    });
+}
+
+function dbDelete(id){
+    return new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readwrite');
+        const req=tx.objectStore(STORE).delete(id);
+        req.onsuccess=()=>resolve();
+        req.onerror=(e)=>reject(e);
+    });
+}
+
+// ====== أدوات ======
+const $=(id)=>document.getElementById(id);
+const showToast=(msg,type='success')=>{
+    $('toastMessage').textContent=msg;
+    $('toast').className='toast show'+(type==='error'?' error':type==='info'?' info':'');
+    const ic=$('toast').querySelector('i');
+    ic.className=type==='error'?'fas fa-exclamation-circle':type==='info'?'fas fa-info-circle':'fas fa-check-circle';
+    clearTimeout(showToast._t);
+    showToast._t=setTimeout(()=>$('toast').classList.remove('show'),2500);
+};
+const showLoading=(t='جارٍ...')=>{$('loadingText').textContent=t;$('loadingOverlay').classList.add('show')};
+const hideLoading=()=>$('loadingOverlay').classList.remove('show');
+const fmtTime=(s)=>{if(!isFinite(s))return '0.0';return s.toFixed(1)};
+
+// ====== الحالة ======
+let state=null;
+let currentProject=null;
+let autosaveTimer=null;
+let projectsList=[];
+let contextTargetId=null;
+let renameTargetId=null;
+let deleteTargetId=null;
+
+const defaultState=()=>({
+    videoLoaded:false,
+    isPlaying:false,
+    duration:0,
+    trimStart:0,
+    trimEnd:0,
+    rotation:0,
+    flipH:false,
+    flipV:false,
+    speed:1.0,
+    volume:1.0,
+    crop:{top:0,bottom:0,right:0,left:0},
+    filter:'none',
+    filterIntensity:1.0,
+    adjust:{brightness:1,contrast:1,saturation:1,hue:0,blur:0},
+    text:{enabled:false,content:'نص تجريبي',size:40,color:'#ffffff',x:0.5,y:0.8,bgColor:'#000000',bgAlpha:0,bold:true,italic:false,shadow:true},
+    image:{enabled:false,element:null,size:0.2,x:0.8,y:0.15},
+    gridVisible:false,
+    zoomLevel:1
+});
+
+// ====== عناصر ======
+const videoEl=$('videoEl');
+const previewCanvas=$('previewCanvas');
+const ctx=previewCanvas.getContext('2d');
+
+// ====== شاشة المشاريع ======
+async function renderProjects(){
+    projectsList=await dbGetAll();
+    const query=($('searchInput').value||'').toLowerCase().trim();
+    const sort=$('sortSelect').value;
+    let filtered=projectsList.filter(p=>!query||(p.name||'').toLowerCase().includes(query));
+    filtered.sort((a,b)=>{
+        if(sort==='date-desc')return (b.updatedAt||0)-(a.updatedAt||0);
+        if(sort==='date-asc')return (a.updatedAt||0)-(b.updatedAt||0);
+        if(sort==='name-asc')return (a.name||'').localeCompare(b.name||'','ar');
+        if(sort==='name-desc')return (b.name||'').localeCompare(a.name||'','ar');
+        return 0;
+    });
+    const grid=$('projectsGrid');
+    grid.innerHTML='';
+    // بطاقة مشروع جديد
+    const newCard=document.createElement('div');
+    newCard.className='new-project-card';
+    newCard.innerHTML='<i class="fas fa-plus-circle"></i><span>مشروع جديد</span>';
+    newCard.onclick=()=>openNewProjectModal();
+    grid.appendChild(newCard);
+    if(filtered.length===0){
+        const em=document.createElement('div');
+        em.className='empty-projects';
+        em.innerHTML='<i class="fas fa-folder-open"></i><h3>لا توجد مشاريع</h3><p>أنشئ مشروعك الأول بالضغط على "مشروع جديد"</p>';
+        em.style.gridColumn='1/-1';
+        grid.appendChild(em);
+        return;
+    }
+    filtered.forEach(p=>{
+        const card=document.createElement('div');
+        card.className='project-card';
+        card.dataset.id=p.id;
+        const dateStr=p.updatedAt?new Date(p.updatedAt).toLocaleDateString('ar'):'';
+        const isEdited=p.hasVideo;
+        let thumbHTML='<div class="no-thumb"><i class="fas fa-video"></i></div>';
+        if(p.thumbnail){
+            thumbHTML='<img src="'+p.thumbnail+'" alt="">';
+        }
+        card.innerHTML=`
+            <div class="project-thumb">
+                ${thumbHTML}
+                <span class="status-badge ${isEdited?'edited':'empty'}">${isEdited?'مُحرّر':'فارغ'}</span>
+                ${p.videoDuration?'<span class="duration-badge">'+fmtTime(p.videoDuration)+'ث</span>':''}
+                <button class="project-menu-btn" data-id="${p.id}"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+            <div class="project-info">
+                <div class="project-name">${escapeHtml(p.name||'بدون اسم')}</div>
+                <div class="project-meta"><span>${dateStr}</span><span>${p.textEnabled?'<i class="fas fa-font"></i>':''}</span></div>
+            </div>
+        `;
+        card.addEventListener('click',(e)=>{
+            if(e.target.closest('.project-menu-btn'))return;
+            openProject(p.id);
+        });
+        card.querySelector('.project-menu-btn').addEventListener('click',(e)=>{
+            e.stopPropagation();
+            openContextMenu(e, p.id);
+        });
+        grid.appendChild(card);
+    });
+}
+
+function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ====== قائمة السياق ======
+function openContextMenu(e, id){
+    contextTargetId=id;
+    const menu=$('contextMenu');
+    const x=e.clientX, y=e.clientY;
+    menu.style.left=Math.min(x, window.innerWidth-180)+'px';
+    menu.style.top=Math.min(y, window.innerHeight-200)+'px';
+    menu.classList.add('show');
+}
+document.addEventListener('click',(e)=>{
+    if(!e.target.closest('#contextMenu')&&!e.target.closest('.project-menu-btn')){
+        $('contextMenu').classList.remove('show');
+    }
+});
+$('contextMenu').addEventListener('click',(e)=>{
+    const btn=e.target.closest('button');
+    if(!btn)return;
+    const action=btn.dataset.action;
+    $('contextMenu').classList.remove('show');
+    const id=contextTargetId;
+    if(action==='open')openProject(id);
+    else if(action==='rename'){
+        renameTargetId=id;
+        const p=projectsList.find(x=>x.id===id);
+        $('renameInput').value=p?p.name:'';
+        $('renameModal').classList.add('show');
+        setTimeout(()=>$('renameInput').focus(),100);
+    }
+    else if(action==='duplicate')duplicateProject(id);
+    else if(action==='delete'){
+        deleteTargetId=id;
+        $('deleteModal').classList.add('show');
+    }
+});
+
+// ====== مودالات ======
+function openNewProjectModal(){
+    $('newProjectName').value='مشروع '+new Date().toLocaleDateString('ar');
+    $('newProjectModal').classList.add('show');
+    setTimeout(()=>$('newProjectName').focus(),100);
+}
+$('newProjectTopBtn').onclick=openNewProjectModal;
+$('newProjectCancelBtn').onclick=()=>$('newProjectModal').classList.remove('show');
+$('newProjectCreateBtn').onclick=async()=>{
+    const name=$('newProjectName').value.trim()||'مشروع جديد';
+    $('newProjectModal').classList.remove('show');
+    const id='proj_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    const project={
+        id, name,
+        createdAt:Date.now(), updatedAt:Date.now(),
+        hasVideo:false, videoDuration:0,
+        thumbnail:null,
+        state:null,
+        videoBlob:null,
+        imageBlob:null
+    };
+    await dbPut(project);
+    await renderProjects();
+    showToast('تم إنشاء المشروع');
+    setTimeout(()=>openProject(id),200);
+};
+
+$('renameCancelBtn').onclick=()=>$('renameModal').classList.remove('show');
+$('renameSaveBtn').onclick=async()=>{
+    const name=$('renameInput').value.trim();
+    if(!name){showToast('الاسم مطلوب','error');return;}
+    const p=await dbGet(renameTargetId);
+    if(p){p.name=name;p.updatedAt=Date.now();await dbPut(p);}
+    $('renameModal').classList.remove('show');
+    await renderProjects();
+    if(currentProject&&currentProject.id===renameTargetId)currentProject.name=name;
+    showToast('تم التعديل');
+};
+
+$('deleteCancelBtn').onclick=()=>$('deleteModal').classList.remove('show');
+$('deleteConfirmBtn').onclick=async()=>{
+    await dbDelete(deleteTargetId);
+    $('deleteModal').classList.remove('show');
+    await renderProjects();
+    showToast('تم الحذف','info');
+};
+
+async function duplicateProject(id){
+    const p=await dbGet(id);
+    if(!p)return;
+    const newP={...p,id:'proj_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:p.name+' (نسخة)',createdAt:Date.now(),updatedAt:Date.now()};
+    await dbPut(newP);
+    await renderProjects();
+    showToast('تم التكرار');
+}
+
+// ====== فتح مشروع ======
+async function openProject(id){
+    showLoading('جارٍ فتح المشروع...');
+    const p=await dbGet(id);
+    if(!p){hideLoading();showToast('المشروع غير موجود','error');return;}
+    currentProject=p;
+    state=defaultState();
+    // استعادة الحالة
+    if(p.state){
+        Object.assign(state,p.state);
+        state.image.element=null;
+        if(p.state.image)state.image={...p.state.image,element:null};
+    }
+    // إعادة تحميل الفيديو
+    if(p.videoBlob){
+        const url=URL.createObjectURL(p.videoBlob);
+        videoEl.src=url;
+        await new Promise((resolve)=>{
+            videoEl.onloadedmetadata=()=>{
+                state.videoLoaded=true;
+                state.duration=videoEl.duration;
+                previewCanvas.width=videoEl.videoWidth;
+                previewCanvas.height=videoEl.videoHeight;
+                previewCanvas.style.display='block';
+                $('placeholder').style.display='none';
+                $('playbackControls').style.display='flex';
+                $('exportBtn').disabled=false;
+                $('screenshotBtn').disabled=false;
+                $('trimStart').max=state.duration;
+                $('trimEnd').max=state.duration;
+                $('trimStart').value=state.trimStart;
+                $('trimEnd').value=state.trimEnd;
+                $('trimStartVal').textContent=state.trimStart.toFixed(1);
+                $('trimEndVal').textContent=state.trimEnd.toFixed(1);
+                $('videoClip').style.display='flex';
+                $('videoClip').textContent='فيديو ('+fmtTime(state.duration)+'ث)';
+                $('timelineInfo').textContent='المدة: '+fmtTime(state.duration)+'ث';
+                videoEl.currentTime=state.trimStart;
+                videoEl.volume=state.volume;
+                videoEl.playbackRate=state.speed;
+                resolve();
+            };
+            videoEl.onerror=()=>{showToast('فشل تحميل الفيديو','error');resolve()};
+        });
+    }
+    // إعادة تحميل الصورة
+    if(p.imageBlob){
+        const img=new Image();
+        await new Promise((resolve)=>{
+            img.onload=()=>{state.image.element=img;state.image.enabled=true;resolve()};
+            img.onerror=()=>resolve();
+            img.src=URL.createObjectURL(p.imageBlob);
+        });
+    }
+    // تحديث الواجهة
+    syncUIFromState();
+    drawFrame();
+    // تبديل الشاشات
+    $('projectsScreen').classList.add('hidden');
+    $('editorScreen').classList.add('active');
+    $('backToProjectsBtn').style.display='flex';
+    $('uploadBtn').style.display='flex';
+    $('screenshotBtn').style.display='flex';
+    $('exportBtn').style.display='flex';
+    hideLoading();
+    showToast('مرحبًا بك في: '+p.name);
+}
+
+function syncUIFromState(){
+    if(!state)return;
+    // النص
+    $('textContent').value=state.text.content||'';
+    $('textSize').value=state.text.size;
+    $('textSizeVal').textContent=state.text.size;
+    $('textColor').value=state.text.color;
+    $('textX').value=Math.round(state.text.x*100);
+    $('textXVal').textContent=Math.round(state.text.x*100);
+    $('textY').value=Math.round(state.text.y*100);
+    $('textYVal').textContent=Math.round(state.text.y*100);
+    $('textBgColor').value=state.text.bgColor;
+    $('textBgAlpha').value=Math.round(state.text.bgAlpha*100);
+    $('textBgAlphaVal').textContent=Math.round(state.text.bgAlpha*100);
+    $('textClip').style.display=state.text.enabled?'flex':'none';
+    // الصورة
+    if(state.image.enabled&&state.image.element){
+        $('imageSettings').style.display='block';
+        $('imageClip').style.display='flex';
+        $('imgSize').value=Math.round(state.image.size*100);
+        $('imgSizeVal').textContent=Math.round(state.image.size*100);
+        $('imgX').value=Math.round(state.image.x*100);
+        $('imgXVal').textContent=Math.round(state.image.x*100);
+        $('imgY').value=Math.round(state.image.y*100);
+        $('imgYVal').textContent=Math.round(state.image.y*100);
+    }
+    // السرعة والصوت
+    $('speedControl').value=state.speed;
+    $('speedVal').textContent=state.speed.toFixed(1);
+    $('volumeControl').value=Math.round(state.volume*100);
+    $('volumeVal').textContent=Math.round(state.volume*100);
+    // الفلاتر
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===state.filter));
+    $('filterIntensity').value=Math.round(state.filterIntensity*100);
+    $('filterIntensityVal').textContent=Math.round(state.filterIntensity*100);
+    // التعديلات
+    $('brightness').value=Math.round(state.adjust.brightness*100);
+    $('brightnessVal').textContent=Math.round(state.adjust.brightness*100);
+    $('contrast').value=Math.round(state.adjust.contrast*100);
+    $('contrastVal').textContent=Math.round(state.adjust.contrast*100);
+    $('saturation').value=Math.round(state.adjust.saturation*100);
+    $('saturationVal').textContent=Math.round(state.adjust.saturation*100);
+    $('hue').value=state.adjust.hue;
+    $('hueVal').textContent=state.adjust.hue;
+    $('blur').value=state.adjust.blur;
+    $('blurVal').textContent=state.adjust.blur;
+    // الاقتصاص
+    ['cropTop','cropBottom','cropRight','cropLeft'].forEach(k=>{
+        const val=state.crop[k.replace('crop','').toLowerCase()]||0;
+        $(k).value=val;
+        $(k+'Val').textContent=val;
+    });
+    // الشبكة
+    $('gridOverlay').classList.toggle('show',state.gridVisible);
+}
+
+// ====== العودة للمشاريع ======
+$('backToProjectsBtn').onclick=async()=>{
+    await saveCurrentProject(true);
+    videoEl.pause();
+    state.isPlaying=false;
+    $('editorScreen').classList.remove('active');
+    $('projectsScreen').classList.remove('hidden');
+    $('backToProjectsBtn').style.display='none';
+    $('uploadBtn').style.display='none';
+    $('screenshotBtn').style.display='none';
+    $('exportBtn').style.display='none';
+    await renderProjects();
+};
+
+// ====== حفظ المشروع ======
+async function saveCurrentProject(silent){
+    if(!currentProject||!state)return;
+    const indicator=$('autosaveIndicator');
+    if(!silent){indicator.classList.add('show','saving');$('autosaveText').textContent='جارٍ الحفظ...';}
+    // تحديث المشروع
+    currentProject.updatedAt=Date.now();
+    currentProject.hasVideo=state.videoLoaded;
+    currentProject.videoDuration=state.duration;
+    currentProject.textEnabled=state.text.enabled;
+    // لقطة مصغرة
+    if(state.videoLoaded){
+        try{
+            const tmp=document.createElement('canvas');
+            tmp.width=320;tmp.height=180;
+            const tctx=tmp.getContext('2d');
+            tctx.drawImage(videoEl,0,0,tmp.width,tmp.height);
+            currentProject.thumbnail=tmp.toDataURL('image/jpeg',0.6);
+        }catch(e){}
+    }
+    // الحالة
+    const s=JSON.parse(JSON.stringify({
+        ...state,
+        image:{...state.image,element:null}
+    }));
+    currentProject.state=s;
+    // الفيديو (Blob)
+    if(videoEl.src&&videoEl.src.startsWith('blob:')&&!currentProject.videoBlob){
+        try{
+            const resp=await fetch(videoEl.src);
+            currentProject.videoBlob=await resp.blob();
+        }catch(e){}
+    }
+    // الصورة
+    if(state.image.enabled&&state.image.element&&!currentProject.imageBlob){
+        try{
+            const c=document.createElement('canvas');
+            c.width=state.image.element.width;c.height=state.image.element.height;
+            c.getContext('2d').drawImage(state.image.element,0,0);
+            currentProject.imageBlob=await new Promise(r=>c.toBlob(r,'image/png'));
+        }catch(e){}
+    }
+    await dbPut(currentProject);
+    if(!silent){
+        indicator.classList.remove('saving');
+        indicator.classList.add('show');
+        $('autosaveText').textContent='تم الحفظ';
+        setTimeout(()=>indicator.classList.remove('show'),1500);
+    }
+}
+function scheduleAutosave(){
+    clearTimeout(autosaveTimer);
+    autosaveTimer=setTimeout(()=>saveCurrentProject(false),2500);
+}
+
+// ====== رسم ======
+function getFilterCSS(){
+    const adj=state.adjust;
+    const f=state.filter;
+    const intensity=state.filterIntensity;
+    const map={
+        none:'',grayscale:'grayscale(1)',sepia:'sepia(1)',
+        warm:'sepia(0.4) saturate(1.5) hue-rotate(-10deg)',
+        cool:'saturate(1.3) hue-rotate(20deg) brightness(1.05)',
+        vivid:'saturate(1.8) contrast(1.15)',
+        cinematic:'contrast(1.2) saturate(1.3) brightness(0.95)',
+        vintage:'sepia(0.7) contrast(0.9) brightness(1.1)',
+        blur:'blur(3px)'
+    };
+    let filters=[];
+    if(f!=='none'&&intensity>0){
+        const base=map[f]||'';
+        if(base){
+            const parts=base.match(/(\w+)\(([\d.]+)\)/g);
+            if(parts){
+                const adj2=parts.map(m=>{
+                    const p=m.match(/(\w+)\(([\d.]+)\)/);
+                    const name=p[1],val=parseFloat(p[2]);
+                    const nv=1+(val-1)*intensity;
+                    return name+'('+nv.toFixed(2)+')';
+                }).join(' ');
+                filters.push(adj2);
+            }
+        }
+    }
+    if(adj.brightness!==1)filters.push('brightness('+adj.brightness+')');
+    if(adj.contrast!==1)filters.push('contrast('+adj.contrast+')');
+    if(adj.saturation!==1)filters.push('saturate('+adj.saturation+')');
+    if(adj.hue!==0)filters.push('hue-rotate('+adj.hue+'deg)');
+    if(adj.blur>0)filters.push('blur('+adj.blur+'px)');
+    return filters.join(' ')||'none';
+}
+
+function drawFrameOn(tctx,W,H,video){
+    tctx.save();
+    tctx.clearRect(0,0,W,H);
+    const cl=state.crop.left/100,cr=state.crop.right/100,ct=state.crop.top/100,cb=state.crop.bottom/100;
+    const sx=video.videoWidth*cl,sy=video.videoHeight*ct;
+    const sw=video.videoWidth*(1-cl-cr),sh=video.videoHeight*(1-ct-cb);
+    tctx.translate(W/2,H/2);
+    tctx.rotate(state.rotation*Math.PI/180);
+    tctx.scale(state.flipH?-1:1,state.flipV?-1:1);
+    tctx.filter=getFilterCSS();
+    const dw=W*(state.rotation%180===90?H/W:1);
+    const dh=H*(state.rotation%180===90?W/H:1);
+    tctx.drawImage(video,sx,sy,sw,sh,-dw/2,-dh/2,dw,dh);
+    tctx.filter='none';
+    tctx.restore();
+    // الصورة
+    if(state.image.enabled&&state.image.element){
+        const img=state.image.element;
+        const size=state.image.size*Math.min(W,H);
+        const aspect=img.width/img.height;
+        const w=aspect>1?size:size*aspect;
+        const h=aspect>1?size/aspect:size;
+        const x=state.image.x*W-w/2,y=state.image.y*H-h/2;
+        tctx.drawImage(img,x,y,w,h);
+    }
+    // النص
+    if(state.text.enabled&&state.text.content.trim()){
+        drawText(tctx,W,H);
+    }
+}
+
+function drawText(tctx,W,H){
+    const t=state.text;
+    const content=t.content;
+    const fs=t.size;
+    const style=(t.bold?'bold ':'')+(t.italic?'italic ':'');
+    tctx.font=style+fs+"px 'Segoe UI',Tahoma,sans-serif";
+    tctx.textAlign='center';
+    tctx.textBaseline='middle';
+    const lines=content.split('\n');
+    const lh=fs*1.3;
+    const th=lines.length*lh;
+    const startY=(t.y*H)-(th/2)+(lh/2);
+    let maxW=0;
+    lines.forEach(l=>{const w=tctx.measureText(l).width;if(w>maxW)maxW=w});
+    if(t.bgAlpha>0){
+        tctx.save();
+        tctx.globalAlpha=t.bgAlpha;
+        tctx.fillStyle=t.bgColor;
+        const px=20,py=10;
+        tctx.fillRect((t.x*W)-(maxW/2)-px,startY-(lh/2)-py,maxW+px*2,th+py*2);
+        tctx.restore();
+    }
+    if(t.shadow){
+        tctx.shadowColor='rgba(0,0,0,0.7)';
+        tctx.shadowBlur=8;tctx.shadowOffsetX=2;tctx.shadowOffsetY=2;
+    }
+    tctx.fillStyle=t.color;
+    lines.forEach((line,i)=>{
+        const maxW2=W*0.92;
+        const words=line.split(' ');
+        let cur='',yOff=0;
+        words.forEach(word=>{
+            const test=cur?cur+' '+word:word;
+            if(tctx.measureText(test).width>maxW2&&cur){
+                tctx.fillText(cur,t.x*W,startY+i*lh+yOff);
+                cur=word;yOff+=lh;
+            }else{cur=test}
+        });
+        if(cur)tctx.fillText(cur,t.x*W,startY+i*lh+yOff);
+    });
+    tctx.shadowColor='transparent';tctx.shadowBlur=0;tctx.shadowOffsetX=0;tctx.shadowOffsetY=0;
+}
+
+function drawFrame(){
+    if(!state||!state.videoLoaded)return;
+    drawFrameOn(ctx,previewCanvas.width,previewCanvas.height,videoEl);
+}
+
+// ====== رفع الفيديو ======
+$('uploadBtn').onclick=()=>$('videoInput').click();
+$('toolUpload').onclick=()=>$('videoInput').click();
+
+$('videoInput').onchange=(e)=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    if(!file.type.startsWith('video/')){showToast('اختر فيديو صالح','error');return}
+    if(!currentProject){showToast('افتح مشروعًا أولاً','error');return}
+    showLoading('جارٍ تحميل الفيديو...');
+    const url=URL.createObjectURL(file);
+    videoEl.src=url;
+    videoEl.load();
+    videoEl.onloadedmetadata=()=>{
+        state.videoLoaded=true;
+        state.duration=videoEl.duration;
+        state.trimStart=0;state.trimEnd=videoEl.duration;
+        previewCanvas.width=videoEl.videoWidth;
+        previewCanvas.height=videoEl.videoHeight;
+        previewCanvas.style.display='block';
+        $('placeholder').style.display='none';
+        $('playbackControls').style.display='flex';
+        $('exportBtn').disabled=false;
+        $('screenshotBtn').disabled=false;
+        $('trimStart').max=state.duration;
+        $('trimEnd').max=state.duration;
+        $('trimStart').value=0;
+        $('trimEnd').value=state.duration;
+        $('trimStartVal').textContent='0.0';
+        $('trimEndVal').textContent=state.duration.toFixed(1);
+        $('videoClip').style.display='flex';
+        $('videoClip').textContent='فيديو ('+fmtTime(state.duration)+'ث)';
+        $('timelineInfo').textContent='المدة: '+fmtTime(state.duration)+'ث';
+        videoEl.currentTime=0;
+        videoEl.onseeked=()=>{drawFrame();videoEl.onseeked=null};
+        currentProject.videoBlob=file;
+        hideLoading();
+        showToast('تم تحميل الفيديو');
+        scheduleAutosave();
+    };
+    videoEl.onerror=()=>{hideLoading();showToast('فشل التحميل','error')};
+};
+
+// ====== التشغيل ======
+function updateTimeDisplay(){
+    if(!state||!state.videoLoaded)return;
+    $('timeDisplay').textContent=fmtTime(videoEl.currentTime)+' / '+fmtTime(state.duration);
+}
+function animate(){
+    if(!state||!state.isPlaying)return;
+    if(videoEl.currentTime>=state.trimEnd)videoEl.currentTime=state.trimStart;
+    drawFrame();updateTimeDisplay();
+    state.animationId=requestAnimationFrame(animate);
+}
+$('playPauseBtn').onclick=()=>{
+    if(!state||!state.videoLoaded)return;
+    if(state.isPlaying){
+        videoEl.pause();state.isPlaying=false;
+        $('playPauseBtn').innerHTML='<i class="fas fa-play"></i>';
+        cancelAnimationFrame(state.animationId);
+    }else{
+        if(videoEl.currentTime<state.trimStart||videoEl.currentTime>=state.trimEnd)videoEl.currentTime=state.trimStart;
+        videoEl.playbackRate=state.speed;
+        videoEl.play();state.isPlaying=true;
+        $('playPauseBtn').innerHTML='<i class="fas fa-pause"></i>';
+        animate();
+    }
+};
+$('stopBtn').onclick=()=>{
+    if(!state||!state.videoLoaded)return;
+    videoEl.pause();videoEl.currentTime=state.trimStart;
+    state.isPlaying=false;
+    $('playPauseBtn').innerHTML='<i class="fas fa-play"></i>';
+    cancelAnimationFrame(state.animationId);
+    drawFrame();updateTimeDisplay();
+};
+$('skipBackBtn').onclick=()=>{if(!state||!state.videoLoaded)return;videoEl.currentTime=Math.max(state.trimStart,videoEl.currentTime-1);drawFrame();updateTimeDisplay()};
+$('skipFwdBtn').onclick=()=>{if(!state||!state.videoLoaded)return;videoEl.currentTime=Math.min(state.trimEnd,videoEl.currentTime+1);drawFrame();updateTimeDisplay()};
+videoEl.addEventListener('seeked',()=>{if(state&&!state.isPlaying){drawFrame();updateTimeDisplay()}});
+
+// ====== التبويبات ======
+document.querySelectorAll('.tool-tab').forEach(tab=>{
+    tab.onclick=()=>{
+        document.querySelectorAll('.tool-tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tool-content').forEach(c=>c.classList.remove('active'));
+        tab.classList.add('active');
+        $('tab-'+tab.dataset.tab).classList.add('active');
+    };
+});
+
+// ====== أدوات ======
+function toggleSettings(id){
+    ['trimSettings','cropSettings','speedSettings','imageSettings'].forEach(s=>{if(s!==id)$(s).style.display='none'});
+    const el=$(id);
+    el.style.display=el.style.display==='none'?'block':'none';
+}
+$('toolTrim').onclick=()=>toggleSettings('trimSettings');
+$('toolCrop').onclick=()=>toggleSettings('cropSettings');
+$('toolSpeed').onclick=()=>toggleSettings('speedSettings');
+$('toolImage').onclick=()=>$('imageInput').click();
+$('toolRotate').onclick=()=>{if(!state||!state.videoLoaded)return;state.rotation=(state.rotation+90)%360;drawFrame();scheduleAutosave();showToast('تدوير: '+state.rotation+'°')};
+$('toolFlip').onclick=()=>{if(!state||!state.videoLoaded)return;state.flipH=!state.flipH;drawFrame();scheduleAutosave();showToast('قلب: '+(state.flipH?'مفعّل':'معطّل'))};
+$('toolGrid').onclick=()=>{if(!state)return;state.gridVisible=!state.gridVisible;$('gridOverlay').classList.toggle('show',state.gridVisible);scheduleAutosave()};
+$('toolReset').onclick=()=>{
+    if(!state||!state.videoLoaded)return;
+    if(!confirm('إعادة ضبط جميع الإعدادات؟'))return;
+    const d=defaultState();
+    d.videoLoaded=true;d.duration=state.duration;d.trimEnd=state.duration;
+    state=d;
+    syncUIFromState();drawFrame();scheduleAutosave();
+    showToast('تمت إعادة الضبط','info');
+};
+
+// ====== القص ======
+$('trimStart').oninput=(e)=>{
+    if(!state)return;
+    let v=parseFloat(e.target.value);
+    if(v>=state.trimEnd)v=state.trimEnd-0.1;
+    state.trimStart=v;
+    $('trimStartVal').textContent=v.toFixed(1);
+    if(state.videoLoaded){videoEl.currentTime=v;drawFrame()}
+    scheduleAutosave();
+};
+$('trimEnd').oninput=(e)=>{
+    if(!state)return;
+    let v=parseFloat(e.target.value);
+    if(v<=state.trimStart)v=state.trimStart+0.1;
+    state.trimEnd=v;
+    $('trimEndVal').textContent=v.toFixed(1);
+    scheduleAutosave();
+};
+
+// ====== الاقتصاص ======
+['cropTop','cropBottom','cropRight','cropLeft'].forEach(id=>{
+    $(id).oninput=(e)=>{
+        if(!state)return;
+        state.crop[id.replace('crop','').toLowerCase()]=parseInt(e.target.value);
+        $(id+'Val').textContent=e.target.value;
+        drawFrame();scheduleAutosave();
+    };
+});
+
+// ====== السرعة ======
+$('speedControl').oninput=(e)=>{
+    if(!state)return;
+    state.speed=parseFloat(e.target.value);
+    $('speedVal').textContent=state.speed.toFixed(1);
+    if(videoEl)videoEl.playbackRate=state.speed;
+    scheduleAutosave();
+};
+
+// ====== الصوت ======
+$('volumeControl').oninput=(e)=>{
+    if(!state)return;
+    state.volume=parseInt(e.target.value)/100;
+    videoEl.volume=state.volume;
+    $('volumeVal').textContent=e.target.value;
+    scheduleAutosave();
+};
+
+// ====== الصورة ======
+$('imageInput').onchange=(e)=>{
+    const file=e.target.files[0];
+    if(!file||!state)return;
+    if(!file.type.startsWith('image/')){showToast('اختر صورة','error');return}
+    const img=new Image();
+    img.onload=()=>{
+        state.image.element=img;
+        state.image.enabled=true;
+        $('imageSettings').style.display='block';
+        $('imageClip').style.display='flex';
+        currentProject.imageBlob=file;
+        drawFrame();scheduleAutosave();
+        showToast('تمت إضافة الصورة');
+    };
+    img.src=URL.createObjectURL(file);
+};
+['imgSize','imgX','imgY'].forEach(id=>{
+    $(id).oninput=(e)=>{
+        if(!state)return;
+        const val=parseInt(e.target.value);
+        if(id==='imgSize')state.image.size=val/100;
+        if(id==='imgX')state.image.x=val/100;
+        if(id==='imgY')state.image.y=val/100;
+        $(id+'Val').textContent=val;
+        drawFrame();scheduleAutosave();
+    };
+});
+$('removeImageBtn').onclick=()=>{
+    if(!state)return;
+    state.image.enabled=false;state.image.element=null;
+    $('imageSettings').style.display='none';
+    $('imageClip').style.display='none';
+    if(currentProject)currentProject.imageBlob=null;
+    drawFrame();scheduleAutosave();
+};
+
+// ====== النص ======
+$('textContent').oninput=(e)=>{
+    if(!state)return;
+    state.text.content=e.target.value;
+    state.text.enabled=e.target.value.trim().length>0;
+    $('textClip').style.display=state.text.enabled?'flex':'none';
+    $('textClip').textContent=(e.target.value.replace(/\n/g,' ').slice(0,20))||'نص';
+    drawFrame();scheduleAutosave();
+};
+['textSize','textX','textY'].forEach(id=>{
+    $(id).oninput=(e)=>{
+        if(!state)return;
+        const val=parseInt(e.target.value);
+        if(id==='textSize')state.text.size=val;
+        if(id==='textX')state.text.x=val/100;
+        if(id==='textY')state.text.y=val/100;
+        $(id+'Val').textContent=val;
+        drawFrame();scheduleAutosave();
+    };
+});
+$('textColor').oninput=(e)=>{if(!state)return;state.text.color=e.target.value;drawFrame();scheduleAutosave()};
+$('textBgColor').oninput=(e)=>{if(!state)return;state.text.bgColor=e.target.value;drawFrame();scheduleAutosave()};
+$('textBgAlpha').oninput=(e)=>{if(!state)return;state.text.bgAlpha=parseInt(e.target.value)/100;$('textBgAlphaVal').textContent=e.target.value;drawFrame();scheduleAutosave()};
+$('textBoldBtn').onclick=()=>{if(!state)return;state.text.bold=!state.text.bold;$('textBoldBtn').classList.toggle('btn-success',state.text.bold);drawFrame();scheduleAutosave()};
+$('textItalicBtn').onclick=()=>{if(!state)return;state.text.italic=!state.text.italic;$('textItalicBtn').classList.toggle('btn-success',state.text.italic);drawFrame();scheduleAutosave()};
+$('textShadowBtn').onclick=()=>{if(!state)return;state.text.shadow=!state.text.shadow;$('textShadowBtn').classList.toggle('btn-success',state.text.shadow);drawFrame();scheduleAutosave()};
+$('addTextBtn').onclick=()=>{if(!state)return;state.text.enabled=state.text.content.trim().length>0;$('textClip').style.display=state.text.enabled?'flex':'none';drawFrame();scheduleAutosave();showToast('تم تطبيق النص')};
+$('clearTextBtn').onclick=()=>{if(!state)return;state.text.content='';$('textContent').value='';state.text.enabled=false;$('textClip').style.display='none';drawFrame();scheduleAutosave()};
+document.querySelectorAll('[data-preset]').forEach(btn=>{
+    btn.onclick=()=>{
+        if(!state)return;
+        const p=btn.dataset.preset;
+        const presets={
+            title:{size:80,color:'#ffffff',x:0.5,y:0.5,bold:true,bgAlpha:0},
+            subtitle:{size:30,color:'#ffff00',x:0.5,y:0.85,bold:true,bgAlpha:0.5,bgColor:'#000000'},
+            signature:{size:20,color:'#ffffff',x:0.85,y:0.92,bold:false,bgAlpha:0}
+        };
+        Object.assign(state.text,presets[p]);
+        syncUIFromState();drawFrame();scheduleAutosave();
+        showToast('تم تطبيق النمط');
+    };
+});
+
+// ====== الفلاتر ======
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+    btn.onclick=()=>{
+        if(!state)return;
+        document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        state.filter=btn.dataset.filter;
+        drawFrame();scheduleAutosave();
+    };
+});
+$('filterIntensity').oninput=(e)=>{if(!state)return;state.filterIntensity=parseInt(e.target.value)/100;$('filterIntensityVal').textContent=e.target.value;drawFrame();scheduleAutosave()};
+
+// ====== التعديلات ======
+['brightness','contrast','saturation','hue','blur'].forEach(id=>{
+    $(id).oninput=(e)=>{
+        if(!state)return;
+        const val=id==='blur'?parseFloat(e.target.value):parseInt(e.target.value);
+        if(id==='brightness')state.adjust.brightness=val/100;
+        if(id==='contrast')state.adjust.contrast=val/100;
+        if(id==='saturation')state.adjust.saturation=val/100;
+        if(id==='hue')state.adjust.hue=val;
+        if(id==='blur')state.adjust.blur=val;
+        $(id+'Val').textContent=val;
+        drawFrame();scheduleAutosave();
+    };
+});
+$('resetAdjustBtn').onclick=()=>{
+    if(!state)return;
+    state.adjust={brightness:1,contrast:1,saturation:1,hue:0,blur:0};
+    syncUIFromState();drawFrame();scheduleAutosave();
+    showToast('تمت إعادة الضبط','info');
+};
+
+// ====== لقطة ======
+$('screenshotBtn').onclick=()=>{
+    if(!state||!state.videoLoaded)return;
+    drawFrame();
+    previewCanvas.toBlob((blob)=>{
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download='frame-'+Date.now()+'.png';a.click();
+        setTimeout(()=>URL.revokeObjectURL(url),1000);
+        showToast('تم حفظ اللقطة');
+    },'image/png');
+};
+
+// ====== التصدير ======
+$('exportBtn').onclick=async()=>{
+    if(!state||!state.videoLoaded){showToast('ارفع فيديو أولاً','error');return}
+    const trimDur=state.trimEnd-state.trimStart;
+    if(trimDur<=0.1){showToast('مدة القص غير صالحة','error');return}
+    if(typeof MediaRecorder==='undefined'){showToast('متصفحك لا يدعم التصدير','error');return}
+    try{
+        showLoading('جارٍ التصدير...');
+        $('progressBar').style.width='0%';
+        const mimeTypes=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+        let mimeType=mimeTypes.find(m=>MediaRecorder.isTypeSupported(m));
+        if(!mimeType){hideLoading();showToast('صيغة غير مدعومة','error');return}
+        const ec=document.createElement('canvas');
+        ec.width=videoEl.videoWidth;ec.height=videoEl.videoHeight;
+        const ectx=ec.getContext('2d');
+        const stream=ec.captureStream(30);
+        try{
+            const aCtx=new (window.AudioContext||window.webkitAudioContext)();
+            const src=aCtx.createMediaElementSource(videoEl);
+            const dest=aCtx.createMediaStreamDestination();
+            src.connect(dest);src.connect(aCtx.destination);
+            dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+        }catch(e){}
+        const rec=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:4000000});
+        const chunks=[];
+        rec.ondataavailable=(e)=>{if(e.data.size>0)chunks.push(e.data)};
+        const promise=new Promise((resolve,reject)=>{
+            rec.onstop=()=>resolve(new Blob(chunks,{type:mimeType}));
+            rec.onerror=reject;
+        });
+        videoEl.currentTime=state.trimStart;
+        videoEl.muted=true;
+        videoEl.playbackRate=state.speed;
+        rec.start(100);
+        let anim=true;
+        const render=()=>{
+            if(!anim)return;
+            drawFrameOn(ectx,ec.width,ec.height,videoEl);
+            const elapsed=videoEl.currentTime-state.trimStart;
+            $('progressBar').style.width=Math.min(100,(elapsed/trimDur)*100)+'%';
+            if(videoEl.currentTime<state.trimEnd&&!videoEl.ended)requestAnimationFrame(render);
+            else{anim=false;videoEl.pause();videoEl.muted=false;if(rec.state!=='inactive')rec.stop()}
+        };
+        videoEl.play();render();
+        const blob=await promise;
+        hideLoading();$('progressBar').style.width='0%';
+        if(blob.size===0){showToast('فشل التصدير','error');return}
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download='edited-'+Date.now()+'.webm';a.click();
+        setTimeout(()=>URL.revokeObjectURL(url),1000);
+        showToast('تم التصدير ('+(blob.size/1024/1024).toFixed(1)+' MB)');
+    }catch(err){
+        hideLoading();$('progressBar').style.width='0%';
+        console.error(err);showToast('خطأ: '+err.message,'error');
+    }
+};
+
+// ====== تكبير ======
+$('zoomInBtn').onclick=()=>{if(!state)return;state.zoomLevel=Math.min(3,state.zoomLevel+0.2);$('timelineTracks').style.transform='scaleX('+state.zoomLevel+')';$('timelineTracks').style.transformOrigin='right center'};
+$('zoomOutBtn').onclick=()=>{if(!state)return;state.zoomLevel=Math.max(0.5,state.zoomLevel-0.2);$('timelineTracks').style.transform='scaleX('+state.zoomLevel+')';$('timelineTracks').style.transformOrigin='right center'};
+
+// ====== اختصارات ======
+document.addEventListener('keydown',(e)=>{
+    const tag=(e.target.tagName||'').toUpperCase();
+    if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
+    if(e.code==='Space'&&state&&state.videoLoaded){e.preventDefault();$('playPauseBtn').click()}
+});
+
+// ====== بحث وترتيب ======
+$('searchInput').oninput=renderProjects;
+$('sortSelect').onchange=renderProjects;
+
+// ====== بدء ======
+async function init(){
+    try{
+        await openDB();
+        await renderProjects();
+        console.log('%c VN-Clone Pro ','background:#2da8ff;color:white;padding:5px 10px;border-radius:4px;font-weight:bold;');
+    }catch(err){
+        console.error(err);
+        showToast('فشل تهيئة قاعدة البيانات: '+err.message,'error');
+    }
+}
+init();
+
+})();
+</script>
+</body>
+</html>
